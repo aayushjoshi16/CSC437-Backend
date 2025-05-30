@@ -1,0 +1,9 @@
+{
+  "name": "csc437-monorepo-backend",
+  "version": "1.0.0",
+  "main": "../index.js",
+  "types": "../index.ts",
+  "dependencies": {
+    "csc437-monorepo-backend": "src/shared/ValidRoutes"
+  }
+}

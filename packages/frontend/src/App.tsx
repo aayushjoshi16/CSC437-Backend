@@ -6,19 +6,22 @@ import { UploadPage } from "./UploadPage.tsx";
 import { LoginPage } from "./LoginPage.tsx";
 import { MainLayout } from "./MainLayout.tsx";
 import { fetchDataFromServer } from "./MockAppData.ts";
+import { ValidRoutes } from "csc437-monorepo-backend/src/shared/ValidRoutes";
 
 function App() {
-  // Lift up state to App component
   const [imageData, _setImageData] = useState(fetchDataFromServer);
 
   return (
     <Routes>
-      <Route path="/" element={<MainLayout />}>
-        <Route path="/" element={<AllImages images={imageData} />} />
-        <Route path="/upload" element={<UploadPage />} />
-        <Route path="/login" element={<LoginPage />} />
+      <Route path={ValidRoutes.HOME} element={<MainLayout />}>
         <Route
-          path="/images/:imageId"
+          path={ValidRoutes.HOME}
+          element={<AllImages images={imageData} />}
+        />
+        <Route path={ValidRoutes.UPLOAD} element={<UploadPage />} />
+        <Route path={ValidRoutes.LOGIN} element={<LoginPage />} />
+        <Route
+          path={ValidRoutes.IMAGE_DETAILS}
           element={<ImageDetails images={imageData} />}
         />
       </Route>
