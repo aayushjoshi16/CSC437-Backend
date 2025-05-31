@@ -23,8 +23,6 @@ function App() {
   };
 
   useEffect(() => {
-    // Code in here will run when App is created
-    // (Note in dev mode App is created twice)
     const fetchImages = async () => {
       try {
         const response = await fetch("/api/images");

@@ -5,15 +5,14 @@ interface IImageDocument {
   _id: ObjectId;
   src: string;
   name: string;
-  authorId: string; // This contains usernames, not ObjectIds
+  authorId: string;
 }
 
 interface IUserDocument {
   _id: ObjectId;
-  username: string; // Username field to match against authorId
+  username: string;
   name: string;
   avatarSrc: string;
-  // Add any other fields that might be in your user documents
 }
 
 export class ImageProvider {
@@ -46,10 +45,16 @@ export class ImageProvider {
     return this.imageCollection.find().toArray(); // For direct DB access
   }
 
-  async getImagesWithAuthors(): Promise<IApiImageData[]> {
+  async getImagesWithAuthors(nameQuery?: string): Promise<IApiImageData[]> {
     try {
-      // Step 1: Fetch all images
-      const images = await this.imageCollection.find().toArray();
+      // Step 1: Fetch images, with optional name filter
+      let query = {};
+      if (nameQuery) {
+        // Case-insensitive partial match on the name field
+        query = { name: { $regex: nameQuery, $options: "i" } };
+      }
+
+      const images = await this.imageCollection.find(query).toArray();
 
       // Step 2: Extract unique author IDs (usernames)
       const authorUsernames = [...new Set(images.map((img) => img.authorId))];
@@ -114,18 +119,23 @@ export class ImageProvider {
     }
   }
 
-  // Method to add to support name update functionality
-  async updateImageName(imageId: string, newName: string): Promise<boolean> {
+  // Add a dedicated method for searching images by name
+  async searchImagesByName(nameQuery: string): Promise<IApiImageData[]> {
+    return this.getImagesWithAuthors(nameQuery);
+  }
+
+  // Method to update image name
+  async updateImageName(imageId: string, newName: string): Promise<number> {
     try {
       const result = await this.imageCollection.updateOne(
         { _id: new ObjectId(imageId) },
         { $set: { name: newName } }
       );
 
-      return result.modifiedCount > 0;
+      return result.matchedCount;
     } catch (error) {
       console.error(`Error updating image name for ID ${imageId}:`, error);
-      return false;
+      return 0;
     }
   }
 }

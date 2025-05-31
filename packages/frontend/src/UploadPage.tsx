@@ -1,5 +1,3 @@
-// import { MainLayout } from "./MainLayout.tsx";
-
 export function UploadPage() {
   return (
     <div>

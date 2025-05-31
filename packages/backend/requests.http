@@ -1,0 +1,45 @@
+### Get all images
+# This is a comment
+GET http://localhost:3000/api/images
+
+### A second example.  Each request must be delimited by a triple hash
+POST http://localhost:3000/api/test
+Content-Type: application/json # Content-Type header is a must if you're sending JSON
+# Request body separated from headers by newline
+
+{ "a": 1, "b": 2 }
+
+### Search for images by name
+GET http://localhost:3000/api/images/search?name=sunset
+
+### Update image name
+PATCH http://localhost:3000/api/images/683a54448bc24b998afe5a2a
+Content-Type: application/json
+
+{
+  "name": "New name"
+}
+
+### ERROR 1: Invalid ObjectId (404 Not Found)
+PATCH http://localhost:3000/api/images/invalid-object-id
+Content-Type: application/json
+
+{
+  "name": "This request will fail due to invalid ID"
+}
+
+### ERROR 2: Missing name field (400 Bad Request)
+PATCH http://localhost:3000/api/images/683a54448bc24b998afe5a2a
+Content-Type: application/json
+
+{
+  "description": "This request is missing the required name field"
+}
+
+### ERROR 3: Name too long (422 Unprocessable Entity)
+PATCH http://localhost:3000/api/images/683a54448bc24b998afe5a2a
+Content-Type: application/json
+
+{
+  "name": "This name is way too long and will cause the server to reject the request because it exceeds the 100 character limit that we've set for image names in our database to prevent bloating and ensure good performance for our application users."
+}
