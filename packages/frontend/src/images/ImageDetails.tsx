@@ -34,10 +34,12 @@ export function ImageDetails({
     return <div className="not-found-message">Image not found</div>;
   }
 
+  console.log("Image details:", image);
+
   return (
     <div>
       <h2>{image.name}</h2>
-      <p>By {image.author.username}</p>
+      <p>By {image.author.name}</p>
       <img className="ImageDetails-img" src={image.src} alt={image.name} />
       <ImageNameEditor
         initialValue={image.name}

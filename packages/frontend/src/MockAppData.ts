@@ -7,7 +7,7 @@ export interface IImageData {
 
 export interface IUserData {
     id: string,
-    username: string
+    name: string
 }
 
 const IMAGES: IImageData[] = [
@@ -17,7 +17,7 @@ const IMAGES: IImageData[] = [
         name: "Blue merle herding sheep",
         author: {
             id: "0",
-            username: "chunkylover23"
+            name: "chunkylover23"
         }
     },
     {
@@ -26,7 +26,7 @@ const IMAGES: IImageData[] = [
         name: "Huskies",
         author: {
             id: "0",
-            username: "chunkylover23"
+            name: "chunkylover23"
         }
     },
     {
@@ -35,7 +35,7 @@ const IMAGES: IImageData[] = [
         name: "Shiba",
         author: {
             id: "0",
-            username: "chunkylover23"
+            name: "chunkylover23"
         }
     },
     {
@@ -44,7 +44,7 @@ const IMAGES: IImageData[] = [
         name: "Tabby cat",
         author: {
             id: "1",
-            username: "silas_meow"
+            name: "silas_meow"
         },
     },
     {
@@ -53,7 +53,7 @@ const IMAGES: IImageData[] = [
         name: "Chickens",
         author: {
             id: "2",
-            username: "fulffycoat"
+            name: "fulffycoat"
         }
     }
 ];

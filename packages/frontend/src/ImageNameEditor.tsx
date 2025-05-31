@@ -3,27 +3,34 @@ import { useState } from "react";
 interface INameEditorProps {
   initialValue: string;
   imageId: string;
-  onImageNameChange: (id: string, newName: string) => void; // New prop for updating the image name
+  onImageNameChange: (id: string, newName: string) => void;
 }
 
 export function ImageNameEditor(props: INameEditorProps) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [input, setInput] = useState(props.initialValue);
-  const [isLoading, setIsLoading] = useState(false); // Track loading state
-  const [error, setError] = useState<string | null>(null); // Track error state
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmitPressed() {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Simulate API call - using the same URL pattern as used in App.tsx
-      const response = await fetch(
-        `https://picsum.photos/id/${props.imageId}/info`
-      );
+      // Use the new backend API endpoint for updating image names
+      const response = await fetch(`/api/images/${props.imageId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: input }),
+      });
 
       if (!response.ok) {
-        throw new Error(`Failed to update name: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || `Failed to update name: ${response.statusText}`
+        );
       }
 
       // If successful, update the image name in parent component

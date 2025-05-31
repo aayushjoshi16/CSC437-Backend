@@ -7,7 +7,7 @@ export interface IApiImageData {
 
 export interface IApiUserData {
   id: string;
-  username: string;
+  name: string;
 }
 
 export const IMAGES: IApiImageData[] = [
@@ -17,7 +17,7 @@ export const IMAGES: IApiImageData[] = [
     name: "Blue merle herding sheep",
     author: {
       id: "0",
-      username: "chunkylover23",
+      name: "chunkylover23",
     },
   },
   {
@@ -26,7 +26,7 @@ export const IMAGES: IApiImageData[] = [
     name: "Huskies",
     author: {
       id: "0",
-      username: "chunkylover23",
+      name: "chunkylover23",
     },
   },
   {
@@ -35,7 +35,7 @@ export const IMAGES: IApiImageData[] = [
     name: "Shiba",
     author: {
       id: "0",
-      username: "chunkylover23",
+      name: "chunkylover23",
     },
   },
   {
@@ -44,7 +44,7 @@ export const IMAGES: IApiImageData[] = [
     name: "Tabby cat",
     author: {
       id: "1",
-      username: "silas_meow",
+      name: "silas_meow",
     },
   },
   {
@@ -53,7 +53,7 @@ export const IMAGES: IApiImageData[] = [
     name: "Chickens",
     author: {
       id: "2",
-      username: "fulffycoat",
+      name: "fulffycoat",
     },
   },
 ];
