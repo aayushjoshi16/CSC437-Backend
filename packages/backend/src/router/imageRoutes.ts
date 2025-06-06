@@ -98,7 +98,8 @@ export function registerImageRoutes(
   });
 }
 
-// Helper function for creating a delayed response
+// Helper function for creating a delayed response with random time
 function waitDuration(numMs: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, numMs));
+  const randomDelay = Math.random() * 5000;
+  return new Promise((resolve) => setTimeout(resolve, randomDelay));
 }
