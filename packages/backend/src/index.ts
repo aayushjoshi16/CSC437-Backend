@@ -5,16 +5,22 @@ import { ValidRoutes } from "./shared/ValidRoutes";
 import { connectMongo } from "./connectMongo";
 import { MongoClient } from "mongodb";
 import { ImageProvider } from "./ImageProvider";
+import { CredentialsProvider } from "./CredentialsProvider";
 import { registerImageRoutes } from "./router/imageRoutes";
+import { registerAuthRoutes } from "./router/authRoutes";
+import { verifyAuthToken } from "./middleware";
 
-dotenv.config(); // Read the .env file in the current working directory, and load values into process.env.
+dotenv.config();
 const PORT = process.env.PORT || 3000;
 const STATIC_DIR = process.env.STATIC_DIR || "public";
+const JWT_SECRET = process.env.JWT_SECRET || "csc437-default-secret-key";
 
 let mongoClient: MongoClient;
 let imageProvider: ImageProvider;
+let credentialsProvider: CredentialsProvider;
 
 const app = express();
+app.locals.JWT_SECRET = JWT_SECRET;
 app.use(express.static(STATIC_DIR));
 app.use(express.json());
 
@@ -23,10 +29,13 @@ app.use(express.json());
   try {
     mongoClient = await connectMongo();
     imageProvider = new ImageProvider(mongoClient);
+    credentialsProvider = new CredentialsProvider(mongoClient);
     console.log("MongoDB connection established successfully.");
-    
-    // Register image routes after imageProvider is initialized
+
+    // Register routes after successful MongoDB connection
+    app.use("/api/*", verifyAuthToken);
     registerImageRoutes(app, imageProvider);
+    registerAuthRoutes(app, credentialsProvider);
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
     process.exit(1);
@@ -37,7 +46,7 @@ app.get("/api/hello", (req: Request, res: Response) => {
   res.send("Hello, World");
 });
 
-// Replace the individual route with a dynamic route handler for all valid frontend routes
+// Dynamic route handler for all valid frontend routes
 Object.values(ValidRoutes).forEach((route) => {
   app.get(route, (req: Request, res: Response) => {
     const indexPath = path.join(__dirname, "../../frontend/dist/index.html");

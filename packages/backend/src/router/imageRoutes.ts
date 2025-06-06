@@ -9,8 +9,7 @@ export function registerImageRoutes(
   // Updated API endpoint for images that fetches from MongoDB with denormalized author data
   app.get("/api/images", async (req: Request, res: Response) => {
     try {
-      // Wait for 1 second before responding
-      await waitDuration(1000);
+      await waitDuration();
 
       // Get images from database with authors denormalized (all images)
       const imagesWithAuthors = await imageProvider.getImagesWithAuthors();
@@ -18,10 +17,11 @@ export function registerImageRoutes(
     } catch (error) {
       console.error("Error fetching images:", error);
       res.status(500).json({ error: "Failed to fetch images" });
+      return;
     }
   });
 
-  // New endpoint to search images by name
+  // Search images by name
   app.get("/api/images/search", async (req: Request, res: Response) => {
     try {
       const nameQuery = req.query.name as string;
@@ -33,18 +33,19 @@ export function registerImageRoutes(
         res
           .status(400)
           .json({ error: "Search query parameter 'name' is required" });
+        return;
       }
 
-      // Use the updated getImagesWithAuthors method with the name query parameter
       const searchResults = await imageProvider.getImagesWithAuthors(nameQuery);
       res.json(searchResults);
     } catch (error) {
       console.error("Error searching images:", error);
       res.status(500).json({ error: "Failed to search images" });
+      return;
     }
   });
 
-  // New endpoint to update image name with improved error handling
+  // Update image name with improved error handling and authorization
   app.patch("/api/images/:id", async (req: Request, res: Response) => {
     const imageId = req.params.id;
     const { name } = req.body;
@@ -56,6 +57,7 @@ export function registerImageRoutes(
         error: "Bad Request",
         message: "Name field is required in request body",
       });
+      return;
     }
 
     // Check if the name is too long
@@ -64,6 +66,7 @@ export function registerImageRoutes(
         error: "Unprocessable Entity",
         message: `Image name exceeds ${MAX_NAME_LENGTH} characters`,
       });
+      return;
     }
 
     // Check if the ID is a valid ObjectId
@@ -72,34 +75,60 @@ export function registerImageRoutes(
         error: "Not Found",
         message: "Image does not exist",
       });
+      return;
     }
 
     try {
-      // Simulate some latency for better UX feedback
-      await waitDuration(500);
+      // Simulate some latency
+      await waitDuration();
+      // Get the username from the authenticated user
+      if (!req.user || !req.user.username) {
+        res.status(401).send({
+          error: "Unauthorized",
+          message: "Authentication required",
+        });
+      }
 
-      // Call the updateImageName method and get the matchedCount
-      const matchedCount = await imageProvider.updateImageName(imageId, name);
+      const username = req.user?.username || "";
+
+      // Verify ownership
+      const { matchedCount, isOwner } = await imageProvider.updateImageName(
+        imageId,
+        name,
+        username
+      );
+
+      // If the user is not the owner of the image
+      if (!isOwner) {
+        res.status(403).send({
+          error: "Forbidden",
+          message: "You are not authorized to edit this image",
+        });
+        return;
+      }
 
       if (matchedCount > 0) {
         // Return 204 No Content for successful update
         res.status(204).send();
+        return;
       } else {
         // Return 404 if no document matched the ID
         res.status(404).send({
           error: "Not Found",
           message: "Image does not exist",
         });
+        return;
       }
     } catch (error) {
       console.error(`Error updating image name for ID ${imageId}:`, error);
       res.status(500).json({ error: "Failed to update image name" });
+      return;
     }
   });
 }
 
 // Helper function for creating a delayed response with random time
-function waitDuration(numMs: number): Promise<void> {
+function waitDuration(): Promise<void> {
   const randomDelay = Math.random() * 5000;
   return new Promise((resolve) => setTimeout(resolve, randomDelay));
 }

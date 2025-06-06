@@ -43,3 +43,39 @@ Content-Type: application/json
 {
   "name": "This name is way too long and will cause the server to reject the request because it exceeds the 100 character limit that we've set for image names in our database to prevent bloating and ensure good performance for our application users."
 }
+
+### User Registration
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{ "username": "newuser", "password": "password" }
+
+### Register as an image author (e.g., "chunkylover23")
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{ "username": "chunkylover23", "password": "password" }
+
+### Login as an image author
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{ "username": "chunkylover23", "password": "password" }
+
+### Update image with authorization
+PATCH http://localhost:3000/api/images/683a54448bc24b998afe5a2a
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNodW5reWxvdmVyMjMiLCJpYXQiOjE3MTM3MzMwOTUsImV4cCI6MTcxMzgxOTQ5NX0.eXB1YZ4TreoxnWBsqEkLUC7miErQUORmbcBgV7cPYsM
+
+{
+  "name": "Renamed by authorized user"
+}
+
+### ERROR 4: Forbidden - Update image with wrong user token
+PATCH http://localhost:3000/api/images/683a54448bc24b998afe5a2a
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5ld3VzZXIiLCJpYXQiOjE3MTM3MzMwOTUsImV4cCI6MTcxMzgxOTQ5NX0.p-7Fyds3RpRyKoTh5NCh07PYeXORqM1m8JeRqwoOV5U
+
+{
+  "name": "This should fail"
+}

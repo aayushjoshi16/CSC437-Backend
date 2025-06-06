@@ -41,9 +41,9 @@ export class ImageProvider {
     this.userCollection = this.mongoClient.db().collection(usersCollectionName);
   }
 
-  getAllImages() {
-    return this.imageCollection.find().toArray(); // For direct DB access
-  }
+  // getAllImages() {
+  //   return this.imageCollection.find().toArray();
+  // }
 
   async getImagesWithAuthors(nameQuery?: string): Promise<IApiImageData[]> {
     try {
@@ -123,19 +123,51 @@ export class ImageProvider {
   async searchImagesByName(nameQuery: string): Promise<IApiImageData[]> {
     return this.getImagesWithAuthors(nameQuery);
   }
-
-  // Method to update image name
-  async updateImageName(imageId: string, newName: string): Promise<number> {
+  // Get an image by ID
+  async getImageById(imageId: string): Promise<IImageDocument | null> {
     try {
+      return await this.imageCollection.findOne({ _id: new ObjectId(imageId) });
+    } catch (error) {
+      console.error(`Error fetching image for ID ${imageId}:`, error);
+      return null;
+    }
+  }
+
+  // Method to update image name with owner verification
+  async updateImageName(
+    imageId: string,
+    newName: string,
+    username: string
+  ): Promise<{ matchedCount: number; isOwner: boolean }> {
+    try {
+      // First, get the image to check ownership
+      const image = await this.getImageById(imageId);
+
+      // If image doesn't exist or user is not the owner
+      if (!image) {
+        return { matchedCount: 0, isOwner: false };
+      }
+
+      // Check if the current user is the owner of the image
+      const isOwner = image.authorId === username;
+
+      if (!isOwner) {
+        return { matchedCount: 0, isOwner: false };
+      }
+
+      // If user is the owner, proceed with the update
       const result = await this.imageCollection.updateOne(
         { _id: new ObjectId(imageId) },
         { $set: { name: newName } }
       );
 
-      return result.matchedCount;
+      return {
+        matchedCount: result.matchedCount,
+        isOwner: true,
+      };
     } catch (error) {
       console.error(`Error updating image name for ID ${imageId}:`, error);
-      return 0;
+      return { matchedCount: 0, isOwner: false };
     }
   }
 }
