@@ -1,0 +1,47 @@
+### Successful User Registration
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{ "username": "newuser", "password": "password" }
+
+### Missing Password - Should return 400 Bad Request
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{ "username": "newuser" }
+
+### Missing Username - Should return 400 Bad Request
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{ "password": "password" }
+
+### Duplicate Username - Should return 409 Conflict
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{ "username": "newuser", "password": "password123" }
+
+### Successful Login - Should return JWT token
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{ "username": "newuser", "password": "password" }
+
+### Failed Login - Incorrect Password - Should return 401 Unauthorized
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{ "username": "newuser", "password": "wrongpassword" }
+
+### Failed Login - User Doesn't Exist - Should return 401 Unauthorized
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{ "username": "nonexistentuser", "password": "password" }
+
+### Missing Credentials - Should return 400 Bad Request
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{ "username": "newuser" }
