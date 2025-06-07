@@ -44,10 +44,16 @@ export function registerAuthRoutes(
         username,
         password
       );
-
       if (success) {
-        // Return 201 Created with no body
-        res.status(201).send();
+        const jwtSecret = req.app.locals.JWT_SECRET;
+        const token = await generateAuthToken(username, jwtSecret);
+
+        // Return 201 Created with auth token
+        res.status(201).json({
+          username,
+          token,
+          message: "Registration successful",
+        });
         return;
       } else {
         // Username already exists
