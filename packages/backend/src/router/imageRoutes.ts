@@ -1,6 +1,17 @@
 import express, { Request, Response } from "express";
 import { ImageProvider } from "../ImageProvider";
 import { ObjectId } from "mongodb";
+import {
+  imageMiddlewareFactory,
+  handleImageFileErrors,
+} from "../imageUploadMiddleware";
+
+// Extend the Express Request type to include file from multer
+declare module "express-serve-static-core" {
+  interface Request {
+    file?: Express.Multer.File;
+  }
+}
 
 export function registerImageRoutes(
   app: express.Application,
@@ -125,6 +136,65 @@ export function registerImageRoutes(
       return;
     }
   });
+
+  app.post(
+    "/api/images",
+    imageMiddlewareFactory.single("image"),
+    handleImageFileErrors,
+    async (req: Request, res: Response) => {
+      try {
+        // Image was successfully uploaded
+        if (!req.file) {
+          res.status(400).send({
+            error: "Bad Request",
+            message: "No image file was provided",
+          });
+          return;
+        }
+
+        if (!req.user?.username) {
+          res.status(401).send({
+            error: "Unauthorized",
+            message: "User information missing",
+          });
+          return;
+        }
+
+        // Get image name from form
+        const imageName = req.body.name || "Untitled image";
+
+        // Save the image metadata to the database
+        try {
+          const imageId = await imageProvider.saveImage(
+            req.file.filename,
+            imageName,
+            req.user.username
+          );
+
+          // Return success
+          res.status(201).json({
+            message: "Image uploaded successfully",
+            id: imageId,
+            name: imageName,
+            src: `/uploads/${req.file.filename}`,
+            file: req.file,
+          });
+        } catch (dbError) {
+          console.error("Error saving image to database:", dbError);
+          res.status(500).send({
+            error: "Server Error",
+            message: "Failed to save image metadata to database",
+          });
+        }
+      } catch (error) {
+        console.error("Error processing uploaded image:", error);
+        res.status(500).send({
+          error: "Server Error",
+          message: "Failed to process the uploaded image",
+        });
+      }
+    }
+  );
 }
 
 // Helper function for creating a delayed response with random time

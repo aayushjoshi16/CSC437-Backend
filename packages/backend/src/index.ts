@@ -13,6 +13,7 @@ import { verifyAuthToken } from "./middleware";
 dotenv.config();
 const PORT = process.env.PORT || 3000;
 const STATIC_DIR = process.env.STATIC_DIR || "public";
+const UPLOAD_DIR = process.env.IMAGE_UPLOAD_DIR || "uploads";
 const JWT_SECRET = process.env.JWT_SECRET || "csc437-default-secret-key";
 
 let mongoClient: MongoClient;
@@ -22,6 +23,10 @@ let credentialsProvider: CredentialsProvider;
 const app = express();
 app.locals.JWT_SECRET = JWT_SECRET;
 app.use(express.static(STATIC_DIR));
+
+// Serve uploaded images from the uploads directory
+app.use("/uploads", express.static(path.join(__dirname, "..", UPLOAD_DIR)));
+
 app.use(express.json());
 
 // Connect to MongoDB

@@ -44,10 +44,9 @@ export class ImageProvider {
   // getAllImages() {
   //   return this.imageCollection.find().toArray();
   // }
-
   async getImagesWithAuthors(nameQuery?: string): Promise<IApiImageData[]> {
     try {
-      // Step 1: Fetch images, with optional name filter
+      // Fetch images, with optional name filter
       let query = {};
       if (nameQuery) {
         // Case-insensitive partial match on the name field
@@ -56,73 +55,32 @@ export class ImageProvider {
 
       const images = await this.imageCollection.find(query).toArray();
 
-      // Step 2: Extract unique author IDs (usernames)
-      const authorUsernames = [...new Set(images.map((img) => img.authorId))];
-
-      console.log("Unique author usernames:", authorUsernames);
-
-      // Step 3: Fetch all users that match these usernames
-      let authorMap = new Map<string, IUserDocument>();
-
-      if (authorUsernames.length > 0) {
-        const authors = await this.userCollection
-          .find({
-            username: { $in: authorUsernames },
-          })
-          .toArray();
-
-        // Log the found authors to debug
-        console.log("Found authors:", authors.length);
-        console.log("Sample author data:", authors[0] || "No authors found");
-
-        // Step 4: Create a map of username to author data for quick lookups
-        authors.forEach((author) => {
-          authorMap.set(author.username, author);
-        });
-      }
-
-      // Step 5: Transform image data to match IApiImageData
+      // Transform images and provide default author information
       return images.map((image) => {
         const authorUsername = image.authorId;
-        const author = authorMap.get(authorUsername);
 
-        if (!author) {
-          console.log(`Author not found for username: ${authorUsername}`);
-          // Provide complete fallback author data for missing authors
-          return {
-            id: image._id.toString(),
-            src: image.src,
-            name: image.name,
-            author: {
-              id: authorUsername || "unknown",
-              name: `${authorUsername || "Unknown"} (No profile)`,
-              avatarSrc: "/default-avatar.png",
-            },
-          };
-        }
-
-        // Ensure all required fields are present
         return {
           id: image._id.toString(),
           src: image.src,
           name: image.name,
           author: {
-            id: author.username,
-            name: author.name || `${author.username}`,
-            avatarSrc: author.avatarSrc || "/default-avatar.png",
+            id: authorUsername || "unknown",
+            name: authorUsername || "Unknown User",
+            avatarSrc: "/default-avatar.png",
           },
         };
       });
     } catch (error) {
-      console.error("Error fetching images with authors:", error);
+      console.error("Error fetching images:", error);
       throw error;
     }
   }
 
-  // Add a dedicated method for searching images by name
+  // Method to search images by name
   async searchImagesByName(nameQuery: string): Promise<IApiImageData[]> {
     return this.getImagesWithAuthors(nameQuery);
   }
+
   // Get an image by ID
   async getImageById(imageId: string): Promise<IImageDocument | null> {
     try {
@@ -168,6 +126,27 @@ export class ImageProvider {
     } catch (error) {
       console.error(`Error updating image name for ID ${imageId}:`, error);
       return { matchedCount: 0, isOwner: false };
+    }
+  }
+
+  // Method to save a new uploaded image
+  async saveImage(
+    filename: string,
+    name: string,
+    username: string
+  ): Promise<string> {
+    try {
+      const result = await this.imageCollection.insertOne({
+        _id: new ObjectId(),
+        src: `/uploads/${filename}`,
+        name: name,
+        authorId: username,
+      });
+
+      return result.insertedId.toString();
+    } catch (error) {
+      console.error("Error saving image to database:", error);
+      throw error;
     }
   }
 }
