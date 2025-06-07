@@ -17,11 +17,18 @@ export function ImageNameEditor(props: INameEditorProps) {
     setError(null);
 
     try {
-      // Use the new backend API endpoint for updating image names
+      // Get auth token from localStorage
+      const authToken = localStorage.getItem("authToken");
+      if (!authToken) {
+        throw new Error("Authentication required. Please log in again.");
+      }
+
+      // Use the backend API endpoint for updating image names with authorization
       const response = await fetch(`/api/images/${props.imageId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({ name: input }),
       });
