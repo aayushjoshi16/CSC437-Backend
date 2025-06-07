@@ -25,7 +25,7 @@ app.locals.JWT_SECRET = JWT_SECRET;
 app.use(express.static(STATIC_DIR));
 
 // Serve uploaded images from the uploads directory
-app.use("/uploads", express.static(path.join(__dirname, "..", UPLOAD_DIR)));
+app.use("/uploads", express.static(path.join(__dirname, "../../..", UPLOAD_DIR)));
 
 app.use(express.json());
 
